@@ -1,4 +1,4 @@
-#!/usr/bin/env python2 
+#!/usr/bin/python 
 ##Note: For run in arch linux change python to pyhton2
 import os, sys
 import pygtk
@@ -34,10 +34,10 @@ mylaunchpad_lock_file.write(str(os.getpid()) + "\n")
 mylaunchpad_lock_file.close()
 
 ICON_SIZE = 64
-ROW_PADDING = 32
-COL_PADDING = 32
-BUTTON_PADDING = 22
-CONTAINER_PADDING = 10
+ROW_PADDING = 24
+COL_PADDING = 16
+BUTTON_PADDING = 16
+CONTAINER_PADDING = 1
 OPACITY = 75
 
 
@@ -49,8 +49,8 @@ GOOGLE_SEARCH = True
 INTERNAL_MENU_SHUTDOWN_COMMAND = "sudo shutdown -h now"
 INTERNAL_MENU_REBOOT_COMMAND   = "sudo reboot"
 INTERNAL_MENU_LOCK_COMMAND = ""
-INTERNAL_MENU_LOGOUT_COMMAND = ""
-INTERNAL_MENU_SUSPEND_COMMAND = ""
+INTERNAL_MENU_LOGOUT_COMMAND = "dbus-send --session --type=method_call --print-reply --dest=org.gnome.SessionManager /org/gnome/SessionManager org.gnome.SessionManager.Logout uint32:1"
+INTERNAL_MENU_SUSPEND_COMMAND = "python -u /usr/lib/zorinmenu/session-manager.py suspend"
 
 try:
     from lxml import etree
@@ -130,7 +130,7 @@ class AppStore:
         self.window.set_modal(True)
         
         # Get Menu
-        menu = MenuCache(AUTO_UPDATE=False, xdg_menu = launcher.xdg_menu)
+        menu = MenuCache(AUTO_UPDATE=True, xdg_menu = launcher.xdg_menu)
         self.appsmenu = menu.getMenu()
 
         #update cache in the background
@@ -616,7 +616,7 @@ class AppStore:
     def getResults(self, search):
        root = etree.parse(self.appsmenu)
        results = []
-       for item in root.xpath("/xdg-menu/menu[@id]/item[contains(@label, '" + search + "') or contains(@id, '" + search + "') or contains(@icon, '" + search + "') or contains(translate(.//command, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '" + search + "'))]"):
+       for item in root.xpath("/xdg-menu/menu[@id]/item[contains(@label, '" + search + "') or contains(@id, '" + search + "') or contains(@icon, '" + search + "') or contains(translate(.//command, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '" + search + "')]"):
           if not self.isHiddenItem(item.attrib["label"]): 
               results.append({'label': item.attrib["label"], 'icon': item.attrib["icon"], 'command': item.find(".//command").text})
        return results
@@ -802,4 +802,3 @@ class MyLauncher:
 
 launcher = MyLauncher()
 launcher.run_launcher()
-
